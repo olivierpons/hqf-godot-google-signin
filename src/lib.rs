@@ -4,9 +4,9 @@
 //! the Credential Manager calls) builds and tests on any host; [`godot_api`] binds it to
 //! Godot.
 
+pub mod android;
 pub mod config;
 pub mod error;
-pub mod export_plugin;
 pub mod flow;
 pub mod godot_api;
 pub mod id_token;

@@ -13,6 +13,7 @@
     reason = "gdext generates undocumented getters and setters for #[export] fields"
 )]
 
+use crate::android::ANDROID_DEPENDENCIES;
 use crate::config::{self, Mode, SignInConfig};
 use crate::error::{ErrorCode, SignInError};
 use crate::flow::{Attempt, Flow, Next};
@@ -262,6 +263,16 @@ impl HqfGoogleSignIn {
     #[func]
     fn sign_in_silently(&mut self, nonce: GString) {
         self.begin(Mode::Silent, &nonce.to_string());
+    }
+
+    /// Maven artifacts ([code]group:artifact:version[/code]) the Android Gradle build
+    /// needs; the addon's export plugin hands them to Godot.
+    #[func]
+    fn android_dependencies() -> PackedStringArray {
+        ANDROID_DEPENDENCIES
+            .iter()
+            .map(|dependency| GString::from(*dependency))
+            .collect()
     }
 
     /// Whether a sign-in waits for its answer.
