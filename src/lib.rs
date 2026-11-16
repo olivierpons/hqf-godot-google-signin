@@ -5,6 +5,7 @@
 
 pub mod config;
 pub mod error;
+pub mod flow;
 pub mod id_token;
 
 pub use config::{Mode, SignInConfig};
