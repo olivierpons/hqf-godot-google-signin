@@ -18,7 +18,7 @@ use crate::config::{self, Mode, SignInConfig};
 use crate::error::{ErrorCode, SignInError};
 use crate::flow::{Attempt, Flow, Next};
 use crate::java::{self, CALLBACK_INTERFACE, Credential, JValue, JavaRuntime};
-use godot::classes::{Engine, Node, Object, Os};
+use godot::classes::{Engine, GDScript, Node, Object, Os};
 use godot::prelude::*;
 
 const JAVA_CLASS_WRAPPER: &str = "JavaClassWrapper";
@@ -60,7 +60,7 @@ impl GodotJava {
         ))
     }
 
-    fn proxy(&mut self, callback: Gd<HqfCredentialCallback>) -> Result<Variant, SignInError> {
+    fn proxy(&mut self, callback: &Gd<RefCounted>) -> Result<Variant, SignInError> {
         let interfaces = PackedStringArray::from(&[GString::from(CALLBACK_INTERFACE)]);
         let proxy = self
             .wrapper
@@ -154,42 +154,25 @@ impl JavaRuntime for GodotJava {
     }
 }
 
-/// The object Android calls back with the answer to a request.
+/// Source of the object Android calls back with the answer to a request.
 ///
-/// Android calls it on its main thread, not Godot's: it only forwards the answer to its
-/// node with `call_deferred`, and the node never touches it once handed to Java.
-#[derive(GodotClass)]
-#[class(init, base = RefCounted)]
-pub struct HqfCredentialCallback {
-    target: Option<InstanceId>,
-    on_result: StringName,
-    on_error: StringName,
-    ticket: i64,
-}
-
-#[godot_api]
-impl HqfCredentialCallback {
-    #[func(rename = onResult)]
-    fn on_result(&self, value: Variant) {
-        self.forward(&self.on_result, value);
-    }
-
-    #[func(rename = onError)]
-    fn on_error(&self, exception: Variant) {
-        self.forward(&self.on_error, exception);
-    }
-}
-
-impl HqfCredentialCallback {
-    fn forward(&self, method: &StringName, value: Variant) {
-        let Some(target) = self.target else {
-            return;
-        };
-        if let Ok(mut node) = Gd::<Object>::try_from_instance_id(target) {
-            node.call_deferred(method, &[value, self.ticket.to_variant()]);
-        }
-    }
-}
+/// Android calls it on its own main thread, where godot-rust refuses to run: the object is
+/// GDScript, and only forwards the answer to its node with `call_deferred`, which runs
+/// on Godot's main thread.
+const CALLBACK_SOURCE: &str = "extends RefCounted
+var target_id: int
+var on_result: StringName
+var on_error: StringName
+var ticket: int
+func onResult(value: Variant) -> void:
+\t_forward(on_result, value)
+func onError(exception: Variant) -> void:
+\t_forward(on_error, exception)
+func _forward(method: StringName, value: Variant) -> void:
+\tvar target: Object = instance_from_id(target_id)
+\tif target != null:
+\t\ttarget.call_deferred(method, value, ticket)
+";
 
 /// Signs the player in with their Google account, on Android.
 ///
@@ -214,6 +197,11 @@ pub struct HqfGoogleSignIn {
     cancel_signal: Option<Variant>,
     ticket: i64,
     signing_out: bool,
+    /// Callbacks handed to Java: the proxy holds only their instance ID, so the node
+    /// keeps them alive until their answer arrives.
+    request_callback: Option<Gd<RefCounted>>,
+    sign_out_callback: Option<Gd<RefCounted>>,
+    callback_script: Option<Gd<GDScript>>,
     owner: Base<Node>,
 }
 
@@ -314,13 +302,19 @@ impl HqfGoogleSignIn {
         if self.signing_out {
             return;
         }
+        let callback = match self.callback("_on_sign_out_result", "_on_sign_out_error") {
+            Ok(callback) => callback,
+            Err(error) => return self.sign_out_fail(&error),
+        };
         let sent = GodotJava::new().and_then(|mut runtime| {
-            let callback = self.callback("_on_sign_out_result", "_on_sign_out_error");
-            let proxy = runtime.proxy(callback)?;
+            let proxy = runtime.proxy(&callback)?;
             java::send_sign_out(&mut runtime, proxy)
         });
         match sent {
-            Ok(()) => self.signing_out = true,
+            Ok(()) => {
+                self.signing_out = true;
+                self.sign_out_callback = Some(callback);
+            }
             Err(error) => self.sign_out_fail(&error),
         }
     }
@@ -331,6 +325,7 @@ impl HqfGoogleSignIn {
             return;
         }
         self.cancel_signal = None;
+        self.request_callback = None;
         let read =
             GodotJava::new().and_then(|mut runtime| java::read_response(&mut runtime, &response));
         let _ = self.flow.succeed();
@@ -346,6 +341,7 @@ impl HqfGoogleSignIn {
             return;
         }
         self.cancel_signal = None;
+        self.request_callback = None;
         let error = match GodotJava::new() {
             Ok(mut runtime) => java::read_exception(&mut runtime, &exception),
             Err(error) => error,
@@ -359,12 +355,14 @@ impl HqfGoogleSignIn {
     #[func]
     fn _on_sign_out_result(&mut self, _value: Variant, _ticket: i64) {
         self.signing_out = false;
+        self.sign_out_callback = None;
         self.signals().signed_out().emit();
     }
 
     #[func]
     fn _on_sign_out_error(&mut self, exception: Variant, _ticket: i64) {
         self.signing_out = false;
+        self.sign_out_callback = None;
         let error = match GodotJava::new() {
             Ok(mut runtime) => java::read_exception(&mut runtime, &exception),
             Err(error) => error,
@@ -401,15 +399,24 @@ impl HqfGoogleSignIn {
             self.flow.cancel();
             return self.fail(&SignInError::new(ErrorCode::InvalidConfig, "no config"));
         };
-        let callback = self.callback("_on_credential_result", "_on_credential_error");
+        let callback = match self.callback("_on_credential_result", "_on_credential_error") {
+            Ok(callback) => callback,
+            Err(error) => {
+                self.flow.cancel();
+                return self.fail(&error);
+            }
+        };
         let sent = GodotJava::new().and_then(|mut runtime| {
             let option = java::build_option(&mut runtime, &config, attempt, &self.nonce)?;
             let request = java::build_request(&mut runtime, option)?;
-            let proxy = runtime.proxy(callback)?;
+            let proxy = runtime.proxy(&callback)?;
             java::send_request(&mut runtime, request, proxy)
         });
         match sent {
-            Ok(signal) => self.cancel_signal = Some(signal),
+            Ok(signal) => {
+                self.cancel_signal = Some(signal);
+                self.request_callback = Some(callback);
+            }
             Err(error) => {
                 self.flow.cancel();
                 self.fail(&error);
@@ -417,16 +424,35 @@ impl HqfGoogleSignIn {
         }
     }
 
-    fn callback(&self, on_result: &str, on_error: &str) -> Gd<HqfCredentialCallback> {
-        let mut callback = HqfCredentialCallback::new_gd();
-        {
-            let mut fields = callback.bind_mut();
-            fields.target = Some(self.base().instance_id());
-            fields.on_result = StringName::from(on_result);
-            fields.on_error = StringName::from(on_error);
-            fields.ticket = self.ticket;
-        }
-        callback
+    fn callback(&mut self, on_result: &str, on_error: &str) -> Result<Gd<RefCounted>, SignInError> {
+        let script = if let Some(script) = &self.callback_script {
+            script.clone()
+        } else {
+            let mut script = GDScript::new_gd();
+            script.set_source_code(CALLBACK_SOURCE);
+            if script.reload() != godot::global::Error::OK {
+                return Err(SignInError::new(
+                    ErrorCode::Bridge,
+                    "the callback script does not compile",
+                ));
+            }
+            self.callback_script = Some(script.clone());
+            script
+        };
+        let mut callback = script
+            .upcast::<Object>()
+            .try_call("new", &[])
+            .ok()
+            .and_then(|object| object.try_to::<Gd<RefCounted>>().ok())
+            .ok_or_else(|| SignInError::new(ErrorCode::Bridge, "no callback object"))?;
+        callback.set(
+            "target_id",
+            &self.base().instance_id().to_i64().to_variant(),
+        );
+        callback.set("on_result", &StringName::from(on_result).to_variant());
+        callback.set("on_error", &StringName::from(on_error).to_variant());
+        callback.set("ticket", &self.ticket.to_variant());
+        Ok(callback)
     }
 
     fn succeed(&mut self, credential: &Credential) {
