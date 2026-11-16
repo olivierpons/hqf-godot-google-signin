@@ -26,6 +26,6 @@ mod entry {
     /// Extension entry point registered with Godot.
     struct HqfGoogleSignInExtension;
 
-    #[gdextension]
+    #[gdextension(entry_symbol = hqf_google_signin_init)]
     unsafe impl ExtensionLibrary for HqfGoogleSignInExtension {}
 }
