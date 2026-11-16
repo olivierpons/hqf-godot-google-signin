@@ -21,7 +21,7 @@ jobs:
     name: fmt, clippy, tests, doctests
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: Toolchain from rust-toolchain.toml
         run: rustup toolchain install
       - uses: taiki-e/install-action@v2
@@ -36,7 +36,7 @@ jobs:
     name: mutation testing
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: Toolchain from rust-toolchain.toml
         run: rustup toolchain install
       - uses: taiki-e/install-action@v2
@@ -48,5 +48,5 @@ jobs:
     name: licenses and advisories
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - uses: EmbarkStudios/cargo-deny-action@v2
