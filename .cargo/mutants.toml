@@ -1,0 +1,4 @@
+# The Godot bindings run only inside Godot on an Android device: no host test can call
+# them, so their mutants would all survive. Their logic lives in the tested modules
+# (config, error, flow, id_token, java); the bindings are checked on a device.
+exclude_globs = ["src/godot_api.rs", "src/export_plugin.rs"]
