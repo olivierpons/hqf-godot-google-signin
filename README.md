@@ -24,7 +24,8 @@ Status: work in progress, not yet tested on a device.
 3. In the Android export preset, tick *Gradle Build > Use Gradle Build* (the Google
    libraries are Maven dependencies, only the Gradle build includes them).
 
-Prebuilt libraries: Linux x86_64 (editor) and Android arm64, arm32, x86_64. Other
+Prebuilt libraries (release builds, used for debug exports too): Linux x86_64 (editor)
+and Android arm64, arm32, x86_64. Other
 editors can still export, but the export plugin needs the extension loaded in the
 editor to list the Google libraries; build from source for them (`cargo build`).
 
