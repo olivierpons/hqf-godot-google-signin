@@ -5,6 +5,8 @@
 
 pub mod config;
 pub mod error;
+pub mod id_token;
 
 pub use config::{Mode, SignInConfig};
 pub use error::{ErrorCode, SignInError};
+pub use id_token::{IdTokenClaims, TokenError};
