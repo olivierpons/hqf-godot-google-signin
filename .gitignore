@@ -1,0 +1,7 @@
+/target
+/fuzz/target
+/fuzz/artifacts
+/fuzz/coverage
+mutants.out*/
+*.uid
+/demo/.godot/
