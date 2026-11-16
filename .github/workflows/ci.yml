@@ -23,7 +23,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Toolchain from rust-toolchain.toml
-        run: rustup show active-toolchain || rustup toolchain install
+        run: rustup toolchain install
       - uses: taiki-e/install-action@v2
         with:
           tool: cargo-nextest
@@ -38,7 +38,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Toolchain from rust-toolchain.toml
-        run: rustup show active-toolchain || rustup toolchain install
+        run: rustup toolchain install
       - uses: taiki-e/install-action@v2
         with:
           tool: cargo-mutants
