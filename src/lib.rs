@@ -7,6 +7,7 @@ pub mod config;
 pub mod error;
 pub mod flow;
 pub mod id_token;
+pub mod java;
 
 pub use config::{Mode, SignInConfig};
 pub use error::{ErrorCode, SignInError};
