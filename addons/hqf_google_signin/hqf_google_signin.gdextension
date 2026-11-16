@@ -1,0 +1,17 @@
+[configuration]
+entry_symbol = "gdext_rust_init"
+compatibility_minimum = 4.7
+reloadable = false
+
+[libraries]
+linux.debug.x86_64 = "res://addons/hqf_google_signin/bin/libhqf_google_signin.linux.debug.x86_64.so"
+linux.release.x86_64 = "res://addons/hqf_google_signin/bin/libhqf_google_signin.linux.release.x86_64.so"
+android.debug.arm64 = "res://addons/hqf_google_signin/bin/libhqf_google_signin.android.debug.arm64.so"
+android.release.arm64 = "res://addons/hqf_google_signin/bin/libhqf_google_signin.android.release.arm64.so"
+android.debug.arm32 = "res://addons/hqf_google_signin/bin/libhqf_google_signin.android.debug.arm32.so"
+android.release.arm32 = "res://addons/hqf_google_signin/bin/libhqf_google_signin.android.release.arm32.so"
+android.debug.x86_64 = "res://addons/hqf_google_signin/bin/libhqf_google_signin.android.debug.x86_64.so"
+android.release.x86_64 = "res://addons/hqf_google_signin/bin/libhqf_google_signin.android.release.x86_64.so"
+
+[icons]
+HqfGoogleSignIn = "res://addons/hqf_google_signin/icon.svg"
