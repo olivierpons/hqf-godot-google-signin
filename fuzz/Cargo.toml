@@ -1,0 +1,22 @@
+[package]
+name = "hqf-godot-google-signin-fuzz"
+version = "0.0.0"
+edition = "2024"
+publish = false
+license = "MIT"
+
+[package.metadata]
+cargo-fuzz = true
+
+[dependencies]
+libfuzzer-sys = "0.4"
+hqf-godot-google-signin = { path = ".." }
+
+[[bin]]
+name = "id_token"
+path = "fuzz_targets/id_token.rs"
+test = false
+doc = false
+bench = false
+
+[workspace]
