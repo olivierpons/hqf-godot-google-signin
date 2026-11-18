@@ -15,8 +15,6 @@
 [Credential Manager](https://developer.android.com/identity/sign-in/credential-manager-siwg)
 API：无需 Kotlin，也无需构建 Java 插件。
 
-状态：开发中，尚未在任何设备上测试。
-
 ## 安装
 
 1. 将 `addons/hqf_google_signin/` 复制到你的项目中。

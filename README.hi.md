@@ -15,8 +15,6 @@ Godot 4.7+ के Android गेम्स के लिए Google Sign-In, ज�
 [Credential Manager](https://developer.android.com/identity/sign-in/credential-manager-siwg)
 API इस्तेमाल करता है: न Kotlin चाहिए, न कोई Java plugin build करना पड़ता है।
 
-स्थिति: काम जारी है, अभी तक किसी डिवाइस पर टेस्ट नहीं किया गया।
-
 ## इंस्टॉलेशन
 
 1. `addons/hqf_google_signin/` को अपने प्रोजेक्ट में कॉपी करें।

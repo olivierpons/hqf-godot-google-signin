@@ -12,8 +12,6 @@ Google Sign-In untuk game Android buatan Godot 4.7+, ditulis dengan Rust sebagai
 
 Addon ini menjalankan API [Credential Manager](https://developer.android.com/identity/sign-in/credential-manager-siwg) Android melalui `JavaClassWrapper` dan plugin `AndroidRuntime` bawaan Godot: tanpa Kotlin, tanpa plugin Java yang perlu di-build.
 
-Status: masih dalam pengembangan, belum diuji di perangkat.
-
 ## Instalasi
 
 1. Salin `addons/hqf_google_signin/` ke proyek Anda.

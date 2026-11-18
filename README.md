@@ -16,8 +16,6 @@ It drives the Android
 API through Godot's built-in `JavaClassWrapper` and `AndroidRuntime` plugin: no Kotlin,
 no Java plugin to build.
 
-Status: work in progress, not yet tested on a device.
-
 ## Install
 
 1. Copy `addons/hqf_google_signin/` into your project.

@@ -12,8 +12,6 @@
 
 يستدعي واجهة [Credential Manager](https://developer.android.com/identity/sign-in/credential-manager-siwg) البرمجية (API) في Android عبر الصنف `JavaClassWrapper` والإضافة `AndroidRuntime`، وكلاهما مدمج في Godot: لا حاجة إلى Kotlin، ولا إلى بناء أي إضافة Java.
 
-الحالة: قيد التطوير، ولم يُختبر بعد على أي جهاز.
-
 ## التثبيت
 
 1. انسخ المجلد `addons/hqf_google_signin/` إلى مشروعك.

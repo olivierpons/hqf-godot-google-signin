@@ -15,8 +15,6 @@ Godot 4.7+ দিয়ে তৈরি Android গেমের জন্য Goo
 [Credential Manager](https://developer.android.com/identity/sign-in/credential-manager-siwg)
 API ব্যবহার করে: Kotlin লাগে না, কোনো Java plugin build করারও দরকার নেই।
 
-অবস্থা: কাজ চলছে, এখনও কোনো ডিভাইসে পরীক্ষা করা হয়নি।
-
 ## ইনস্টলেশন
 
 1. `addons/hqf_google_signin/` ফোল্ডারটি আপনার প্রজেক্টে কপি করুন।

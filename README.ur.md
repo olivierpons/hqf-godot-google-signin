@@ -12,8 +12,6 @@
 
 یہ Godot میں پہلے سے موجود `JavaClassWrapper` class اور `AndroidRuntime` plugin کے ذریعے Android کی [Credential Manager](https://developer.android.com/identity/sign-in/credential-manager-siwg) API استعمال کرتا ہے: نہ Kotlin کی ضرورت ہے، نہ کوئی Java plugin بنانا پڑتا ہے۔
 
-صورتِ حال: کام جاری ہے، ابھی تک کسی ڈیوائس پر ٹیسٹ نہیں کیا گیا۔
-
 ## انسٹالیشن
 
 1. اپنے پروجیکٹ میں `addons/hqf_google_signin/` فولڈر کاپی کریں۔
