@@ -5,3 +5,4 @@
 mutants.out*/
 *.uid
 /demo/.godot/
+/dist/
